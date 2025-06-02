@@ -9,7 +9,7 @@ def _requires_from_file(filename):
 
 setuptools.setup(
     name="diversity-evaluator",
-    version="0.1.2",
+    version="0.2.0",
     author="Hiroto ABE",
     author_email="abe.hiroto.t7@dc.tohoku.ac.jp",
     description="A library to compute diversity of QUBO solutions using GED-based scoring.",

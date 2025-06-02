@@ -7,32 +7,12 @@ import numpy as np
 
 class DiversityEvaluator:
     """
-    A class to evaluate solution diversity for a QUBO using only the quadratic term J.
+    A class to evaluate solution diversity for a QUBO using the full QUBO matrix Q.
     Uses a single epsilon and a single sample set to compute diversity based on graph edit distance (GED).
 
-    Usage example:
-
-        # (1) Define J for an n-variable QUBO
-        n = 12
-        J = {(i, j): np.random.uniform(-1, 1) for i in range(n) for j in range(i + 1, n)}
-
-        # (2) Initialize (optionally providing epsilon and an initial sample set)
-        evaluator = DiversityEvaluator(J=J, epsilon=0.05, sample_states=sa_states)
-        # If you want a one-time diversity calculation immediately:
-        diversity_score = evaluator.evaluate()
-
-        # (3) To use a different epsilon for the same sample:
-        evaluator.register_epsilon(0.10)
-        diversity_score = evaluator.evaluate()
-
-        # (4) To replace the sample set and compute diversity again:
-        evaluator.register_sample(sqa_states)
-        evaluator.register_epsilon(0.02)
-        diversity_score = evaluator.evaluate()
-
     Args:
-        J (dict[tuple[int, int], float]):
-            The quadratic term of the QUBO. Keys are (i, j) with i < j, values are coefficients w_{ij}.
+        Q (np.ndarray):
+            The full QUBO coefficient matrix of shape (n, n).
         epsilon (float, optional):
             The threshold parameter for ideal solutions, used as E0 + epsilon * |E0|.
             If None, call register_epsilon() before evaluating.
@@ -43,16 +23,16 @@ class DiversityEvaluator:
 
     def __init__(
         self,
-        J: dict[tuple[int, int], float],
+        Q: np.ndarray,
         epsilon: float = None,
         sample_states: set[tuple[int, ...]] = None,
     ):
-        self.J = J
+        self.Q = Q
         self.epsilon = epsilon
         self.sample_states = sample_states
 
-        # Infer number of variables n from J
-        self.n = self._infer_num_variables(J)
+        # Infer number of variables n from Q
+        self.n = self._infer_num_variables(Q)
 
         # Precompute all 2^n states and their energies, find E0
         self._prepare_all_states()
@@ -72,25 +52,20 @@ class DiversityEvaluator:
             self._prepare_sample(self.sample_states)
 
     @staticmethod
-    def _infer_num_variables(J: dict[tuple[int, int], float]) -> int:
+    def _infer_num_variables(Q: np.ndarray) -> int:
         """
-        Infer the number of variables n from the keys of J.
+        Infer the number of variables n from the shape of Q.
         """
-        if not J:
-            return 0
-        max_index = max(max(i, j) for (i, j) in J.keys())
-        return max_index + 1
+        return Q.shape[0]
 
     def _energy_of(self, state: tuple[int, ...]) -> float:
         """
-        Compute the energy of a binary state (tuple of 0/1) under the quadratic term J.
+        Compute the energy of a binary state (tuple of 0/1) under the full QUBO matrix Q.
 
-        E = sum_{(i,j) in J} J[(i,j)] * state[i] * state[j]
+        E = x^T Q x
         """
-        e = 0.0
-        for (i, j), w in self.J.items():
-            e += w * state[i] * state[j]
-        return e
+        x_vec = np.array(state, dtype=float)
+        return float(x_vec @ self.Q @ x_vec)
 
     def _prepare_all_states(self):
         """
