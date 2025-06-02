@@ -6,7 +6,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setuptools.setup(
     name="diversity-evaluator",
-    version="0.1.0",
+    version="0.1.1",
     author="Hiroto ABE",
     author_email="abe.hiroto.t7@dc.tohoku.ac.jp",
     description="A library to compute diversity of QUBO solutions using GED-based scoring.",
