@@ -2,6 +2,8 @@
 
 `DiversityEvaluator` is a Python library to evaluate the diversity of sampled solutions for a QUBO (Quadratic Unconstrained Binary Optimization) problem. It uses the QUBO and computes a diversity score based on graph edit distance (GED) between a graph of ideal (low-energy) solutions and a graph of sampled solutions.
 
+The code is still strictly for the ideal solution of QUBO and strictly for the GED, but eventually I would like to make an approximate calculation that is easy for everyone to compute.
+
 ## Features
 
 - Accepts a QUBO defined by \( Q_{ij} \).
